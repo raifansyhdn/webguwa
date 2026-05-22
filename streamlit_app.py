@@ -1,6 +1,6 @@
 import streamlit as st
 
-st.title("🎈 halo barudak")
+st.title("Titik koordinat SUKI pada map")
 import pandas as pd
 import pydeck as pdk
 import streamlit as st
