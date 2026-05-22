@@ -6,20 +6,18 @@ st.title("🎈 halo barudak")
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Jump Game</title>
+    <title>Simple Jump Game - Fixed</title>
     <style>
-        /* Gaya Visual Game */
-        body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f0f0; font-family: Arial, sans-serif; }
-        #gameCanvas { background: #fff; border-bottom: 2px solid #333; }
+        body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f0f0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; }
+        #gameCanvas { background: #fff; border-bottom: 3px solid #333; box-shadow: 0 10px 20px rgba(0,0,0,0.1); cursor: pointer; }
         .info { position: absolute; top: 20px; text-align: center; }
     </style>
 </head>
 <body>
 
 <div class="info">
-    <h1>Loncat!</h1>
-    <p>Tekan **Spasi** atau **Klik** untuk loncat.</p>
     <h2 id="score">Skor: 0</h2>
+    <p>Klik atau tekan Spasi untuk loncat</p>
 </div>
 <canvas id="gameCanvas"></canvas>
 
@@ -28,60 +26,59 @@ st.title("🎈 halo barudak")
     const ctx = canvas.getContext("2d");
     const scoreElement = document.getElementById("score");
 
-    // Ukuran Canvas
     canvas.width = 600;
     canvas.height = 200;
 
-    // Variabel Game
+    // --- BAGIAN PENANGANAN GAMBAR ---
+    let imagesLoaded = 0;
+    const totalImages = 2;
+
+    const playerImg = new Image();
+    playerImg.src = 'player.png'; // Pastikan file ini ada di GitHub Anda
+    playerImg.onload = () => { imagesLoaded++; checkAllLoaded(); };
+    playerImg.onerror = () => { useFallback(); }; // Jika gambar error, gunakan kotak warna
+
+    const obstacleImg = new Image();
+    obstacleImg.src = 'obstacle.png'; // Pastikan file ini ada di GitHub Anda
+    obstacleImg.onload = () => { imagesLoaded++; checkAllLoaded(); };
+    obstacleImg.onerror = () => { useFallback(); };
+
+    let useColor = false;
+    function useFallback() {
+        console.warn("Gambar tidak ditemukan, menggunakan kotak warna sebagai pengganti.");
+        useColor = true;
+        checkAllLoaded();
+    }
+
+    function checkAllLoaded() {
+        if (imagesLoaded >= totalImages || useColor) {
+            update(); // Mulai game jika semua siap
+        }
+    }
+
+    // --- LOGIKA GAME ---
     let score = 0;
-    let gameSpeed = 3;
+    let gameSpeed = 4;
     let isGameOver = false;
 
-    // Objek Pemain (Kotak Biru)
-    const player = {
-        x: 50,
-        y: 150,
-        w: 30,
-        h: 30,
-        dy: 0,
-        jumpForce: 12,
-        gravity: 0.6,
-        grounded: false
-    };
-
-    // Objek Rintangan (Kotak Merah)
-    const obstacle = {
-        x: canvas.width,
-        y: 155,
-        w: 25,
-        h: 25
-    };
+    const player = { x: 50, y: 150, w: 40, h: 40, dy: 0, jumpForce: 12, gravity: 0.6, grounded: false };
+    const obstacle = { x: canvas.width, y: 150, w: 35, h: 40 };
 
     function jump() {
         if (player.grounded && !isGameOver) {
             player.dy = -player.jumpForce;
             player.grounded = false;
         } else if (isGameOver) {
-            resetGame();
+            location.reload(); // Refresh halaman untuk restart jika error
         }
     }
 
-    // Input Control
     window.addEventListener("keydown", (e) => { if (e.code === "Space") jump(); });
     canvas.addEventListener("mousedown", jump);
-
-    function resetGame() {
-        score = 0;
-        gameSpeed = 3;
-        obstacle.x = canvas.width;
-        isGameOver = false;
-        requestAnimationFrame(update);
-    }
 
     function update() {
         if (isGameOver) return;
 
-        // Gravitasi & Pergerakan Pemain
         player.dy += player.gravity;
         player.y += player.dy;
 
@@ -91,15 +88,13 @@ st.title("🎈 halo barudak")
             player.grounded = true;
         }
 
-        // Pergerakan Rintangan
         obstacle.x -= gameSpeed;
         if (obstacle.x + obstacle.w < 0) {
             obstacle.x = canvas.width;
             score++;
-            gameSpeed += 0.1; // Makin lama makin cepat
+            gameSpeed += 0.1;
         }
 
-        // Cek Tabrakan
         if (
             player.x < obstacle.x + obstacle.w &&
             player.x + player.w > obstacle.x &&
@@ -107,8 +102,8 @@ st.title("🎈 halo barudak")
             player.y + player.h > obstacle.y
         ) {
             isGameOver = true;
-            alert("Game Over! Skor Akhir: " + score);
-            resetGame();
+            alert("Game Over! Skor: " + score);
+            location.reload();
         }
 
         draw();
@@ -119,16 +114,16 @@ st.title("🎈 halo barudak")
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // Gambar Pemain
-        ctx.fillStyle = "#3498db";
-        ctx.fillRect(player.x, player.y, player.w, player.h);
-
-        // Gambar Rintangan
-        ctx.fillStyle = "#e74c3c";
-        ctx.fillRect(obstacle.x, obstacle.y, obstacle.w, obstacle.h);
+        if (useColor) {
+            ctx.fillStyle = "#3498db";
+            ctx.fillRect(player.x, player.y, player.w, player.h);
+            ctx.fillStyle = "#e74c3c";
+            ctx.fillRect(obstacle.x, obstacle.y, obstacle.w, obstacle.h);
+        } else {
+            ctx.drawImage(playerImg, player.x, player.y, player.w, player.h);
+            ctx.drawImage(obstacleImg, obstacle.x, obstacle.y, obstacle.w, obstacle.h);
+        }
     }
-
-    update();
 </script>
 </body>
 </html>
