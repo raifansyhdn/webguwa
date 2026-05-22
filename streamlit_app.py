@@ -1,6 +1,6 @@
 import streamlit as st
 
-st.title("Titik koordinat SUKI pada map")
+st.title("periodik demo")
 import streamlit as st
 import streamlit.components.v1 as components
 
